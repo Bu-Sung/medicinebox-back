@@ -6,7 +6,6 @@ import com.klp.medicinebox.dto.DrugDTO;
 import com.klp.medicinebox.dto.ShapeDTO;
 import com.klp.medicinebox.entity.DrugEntity;
 import com.klp.medicinebox.repository.DrugRepository;
-import com.klp.medicinebox.repository.PossessionRepository;
 import com.klp.medicinebox.repository.ShapeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,7 +35,6 @@ public class DrugService {
 
     private final DrugRepository drugRepository;
     private final ShapeRepository shapeRepository;
-    private final PossessionRepository possessionRepository;
 
     /**
      * 제품 검색을 위한 함수
