@@ -39,6 +39,5 @@ public class ShapeEntity {
     @Column(name = "drug_backline")
     private String backLine; // 약품 구분선(앞)
 
-    @Column(name = "drug_image")
-    private String image; // 알약 사진
+
 }

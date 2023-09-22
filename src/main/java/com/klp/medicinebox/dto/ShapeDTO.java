@@ -17,4 +17,5 @@ public class ShapeDTO {
     private String backColoer; // 약품 색깔(뒤)
     private String frontLine; // 약품 구분선(앞)
     private String backLine; // 약품 구분선(앞)
+    private String image; // 약품 사진
 }

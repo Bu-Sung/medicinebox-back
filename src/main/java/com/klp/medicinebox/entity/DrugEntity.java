@@ -45,4 +45,7 @@ public class DrugEntity {
     @Column(name = "drug_diposit")
     private String diposit; // 보관법
 
+    @Column(name = "drug_image")
+    private String image; // 알약 사진
+
 }
