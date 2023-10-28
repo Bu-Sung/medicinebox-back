@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class DrugDTO {
+    private Long pid; // 보유 제품 고유번호
     private String seq; // 제품 기준 코드
     private String entpName; // 업체명
     private String name; // 제품 명
