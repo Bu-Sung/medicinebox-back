@@ -383,9 +383,9 @@ public class DrugService {
             File[] files = directory.listFiles();
 
             for (File file : files) {
-                System.out.println("file = " + file);
+
                 try (InputStream fis = new FileInputStream(file); Workbook workbook = WorkbookFactory.create(fis)) {
-                    Sheet sheet = workbook.getSheetAt(0); 
+                    Sheet sheet = workbook.getSheetAt(0);
 
                     for (Row row : sheet) {
                         if (row.getRowNum() == 0) {
@@ -394,17 +394,17 @@ public class DrugService {
                         }
 
                         ShapeEntity shapeEntity = new ShapeEntity();
-                        shapeEntity.setSeq(row.getCell(0).getStringCellValue()); // 0번째 열
-                        shapeEntity.setName(row.getCell(1).getStringCellValue()); // 1번째 열
-                        shapeEntity.setFrontPrint(row.getCell(6).getStringCellValue()); // 6번째 열
-                        shapeEntity.setBackPrint(row.getCell(7).getStringCellValue()); // 7번째 열
-                        shapeEntity.setShape(row.getCell(8).getStringCellValue()); // 8번째 열
-                        shapeEntity.setFrontColor(row.getCell(9).getStringCellValue()); // 9번째 열
-                        shapeEntity.setBackColor(row.getCell(10).getStringCellValue()); // 10번째 열
-                        shapeEntity.setFrontLine(row.getCell(11).getStringCellValue()); // 11번째 열
-                        shapeEntity.setBackLine(row.getCell(12).getStringCellValue()); // 12번째 열
-                        shapeEntity.setForm(row.getCell(4).getStringCellValue()); // 4번째 열
-                        shapeEntity.setImage(row.getCell(5).getStringCellValue()); // 5번째 열
+                        shapeEntity.setSeq(getCellValue(row.getCell(0))); 
+                        shapeEntity.setName(getCellValue(row.getCell(1)));
+                        shapeEntity.setFrontPrint(getCellValue(row.getCell(6)));
+                        shapeEntity.setBackPrint(getCellValue(row.getCell(7)));
+                        shapeEntity.setShape(getCellValue(row.getCell(8)));
+                        shapeEntity.setFrontColor(getCellValue(row.getCell(9)));
+                        shapeEntity.setBackColor(getCellValue(row.getCell(10)));
+                        shapeEntity.setFrontLine(getCellValue(row.getCell(11)));
+                        shapeEntity.setBackLine(getCellValue(row.getCell(12)));
+                        shapeEntity.setForm(getCellValue(row.getCell(4)));
+                        shapeEntity.setImage(getCellValue(row.getCell(5)));
 
                         shapeEntities.add(shapeEntity);
                     }
@@ -421,96 +421,15 @@ public class DrugService {
 
         return false;
     }
-    
 
-    
-    
-
-
-//    public boolean addMedicineShape() {
-//        String directoryPath = ctx.getRealPath(medicineShapeFolderPath);
-//        List<ShapeEntity> shapeEntities = new ArrayList<>();
-//
-//        File directory = new File(directoryPath);
-//        if (directory.exists() && directory.isDirectory()) {
-//            File[] files = directory.listFiles();
-//
-//            for (File file : files) {
-//                try {
-//                    if (file.getName().toLowerCase().endsWith(".xls")) {
-//
-//                        try (InputStream fis = new FileInputStream(file); Workbook workbook = WorkbookFactory.create(fis)) {
-//                            Sheet sheet = workbook.getSheetAt(0);
-//
-//                            for (Row row : sheet) {
-//                                if (row.getRowNum() == 0) {
-//                                    // 헤더 값은 넣지 않음
-//                                    continue;
-//                                }
-//
-//                                ShapeEntity shapeEntity = new ShapeEntity();
-//                                shapeEntity.setSeq(row.getCell(0).getStringCellValue()); // 0번째 열
-//                                shapeEntity.setName(row.getCell(1).getStringCellValue()); // 1번째 열
-//                                shapeEntity.setFrontPrint(row.getCell(6).getStringCellValue()); // 6번째 열
-//                                shapeEntity.setBackPrint(row.getCell(7).getStringCellValue()); // 7번째 열
-//                                shapeEntity.setShape(row.getCell(8).getStringCellValue()); // 8번째 열
-//                                shapeEntity.setFrontColor(row.getCell(9).getStringCellValue()); // 9번째 열
-//                                shapeEntity.setBackColor(row.getCell(10).getStringCellValue()); // 10번째 열
-//                                shapeEntity.setFrontLine(row.getCell(11).getStringCellValue()); // 11번째 열
-//                                shapeEntity.setBackLine(row.getCell(12).getStringCellValue()); // 12번째 열
-//                                shapeEntity.setForm(row.getCell(4).getStringCellValue()); // 4번째 열
-//                                shapeEntity.setImage(row.getCell(5).getStringCellValue()); // 5번째 열
-//
-//                                shapeEntities.add(shapeEntity);
-//                            }
-//                        }
-//                    } else if (file.getName().toLowerCase().endsWith(".csv")) {
-//
-//                        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-//                            String line;
-//                            boolean skipHeader = true;
-//
-//                            while ((line = br.readLine()) != null) {
-//                                if (skipHeader) {
-//                                    // 헤더 값은 넣지 않음
-//                                    skipHeader = false;
-//                                    continue;
-//                                }
-//
-//                                String[] parts = line.split(",");
-//                                if (parts.length >= 13) {
-//                                    ShapeEntity shapeEntity = new ShapeEntity();
-//                                    shapeEntity.setSeq(parts[0]); // 0번째 열
-//                                    shapeEntity.setName(parts[1]); // 1번째 열
-//                                    shapeEntity.setFrontPrint(parts[6]); // 6번째 열
-//                                    shapeEntity.setBackPrint(parts[7]); // 7번째 열
-//                                    shapeEntity.setShape(parts[8]); // 8번째 열
-//                                    shapeEntity.setFrontColor(parts[9]); // 9번째 열
-//                                    shapeEntity.setBackColor(parts[10]); // 10번째 열
-//                                    shapeEntity.setFrontLine(parts[11]); // 11번째 열
-//                                    shapeEntity.setBackLine(parts[12]); // 12번째 열
-//                                    shapeEntity.setForm(parts[4]); // 4번째 열
-//                                    shapeEntity.setImage(parts[5]); // 5번째 열
-//
-//                                    shapeEntities.add(shapeEntity);
-//                                }
-//                            }
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    // 파일 읽기 오류 처리
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            shapeRepository.saveAll(shapeEntities);
-//
-//            return true;
-//        }
-//
-//        return false;
-//    }
+    // cell 값 가져오기 
+    private String getCellValue(Cell cell) {
+        if (cell != null) {
+            return cell.getStringCellValue();
+        }
+        return "";
+    }
 
 
-    
+ 
 }
