@@ -28,16 +28,24 @@ public class ShapeEntity {
     private String shape; // 약품 외형
     
     @Column(name = "drug_frontcolor")
-    private String frontColoer; // 약품 색깔(앞)
+    private String frontColor; // 약품 색깔(앞)
 
     @Column(name = "drug_backcolor")
-    private String backColoer; // 약품 색깔(뒤)
+    private String backColor; // 약품 색깔(뒤)
 
     @Column(name = "drug_frontline")
     private String frontLine; // 약품 구분선(앞)
     
     @Column(name = "drug_backline")
-    private String backLine; // 약품 구분선(앞)
-
-
+    private String backLine; // 약품 구분선(뒤)
+    
+    @Column(name = "drug_form", columnDefinition = "TEXT")
+    private String form; // 약품 제형
+    
+    @Column(name = "drug_image", columnDefinition = "TEXT")
+    private String image; // 약품 사진 
+    
+    @Column(name = "drug_name")
+    private String name; // 약품 이름 
+    
 }
