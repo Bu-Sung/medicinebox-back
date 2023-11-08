@@ -21,4 +21,6 @@ public interface DrugRepository extends JpaRepository<DrugEntity, Long> {
     
     @Query(value = "SELECT * FROM drug WHERE user_id = :uid AND possession_id = :pid", nativeQuery = true)
     DrugEntity findByUidAndPid(Long pid, String uid);
+    
+    DrugEntity findByPid(Long pid);
 }
