@@ -10,18 +10,8 @@ import com.klp.medicinebox.repository.DrugRepository;
 import com.klp.medicinebox.repository.ShapeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -35,10 +25,6 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -68,7 +54,37 @@ public class DrugService {
     public List<DrugDTO> searchDrugList(int type, String search) {
         List<DrugDTO> drugDTOS = new ArrayList<>();
         try {
-            /*URL*/
+            JsonNode bodyNode = getDrugsInfo(type, search).path("body");
+            if (!bodyNode.isMissingNode()) {
+                JsonNode itemsArray = bodyNode.path("items");
+                
+                for (JsonNode item : itemsArray) {
+                    DrugDTO drugDTO = DrugDTO.builder()
+                            .seq(item.get("itemSeq").asText())
+                            .entpName(item.get("entpName").asText())
+                            .name(item.get("itemName").asText())
+                            .efcy(item.get("efcyQesitm").asText())
+                            .use(item.get("useMethodQesitm").asText())
+                            .atpn(item.get("atpnQesitm").asText())
+                            .atpnWarn(item.get("atpnWarnQesitm").asText())
+                            .intrc(item.get("intrcQesitm").asText())
+                            .se(item.get("seQesitm").asText())
+                            .diposit(item.get("depositMethodQesitm").asText())
+                            .image(item.get("itemImage").asText())
+                            .build();
+                    drugDTOS.add(drugDTO);
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(DrugService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return drugDTOS;
+    }
+    
+    public JsonNode getDrugsInfo(int type, String search){
+        JsonNode rootNode = null;
+        try{
+         /*URL*/
             StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList");
             /*Service Key*/
             urlBuilder.append("?" + URLEncoder.encode("serviceKey", "UTF-8") + "=Luco9rwVuxP3RyPaO%2BYc09eiRfSRf%2B260CwkIJfvChXaraDw6TkGMGAO2XeHGX%2FIzhlKjnDgLx60xGKd2UYh1Q%3D%3D");
@@ -113,35 +129,14 @@ public class DrugService {
             String jsonResponse = sb.toString();
             
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode rootNode = mapper.readTree(jsonResponse);
+            rootNode = mapper.readTree(jsonResponse);
+            return rootNode;
+        }catch(Exception e){
             
-            JsonNode bodyNode = rootNode.path("body");
-            if (!bodyNode.isMissingNode()) {
-                JsonNode itemsArray = bodyNode.path("items");
-                
-                for (JsonNode item : itemsArray) {
-                    DrugDTO drugDTO = DrugDTO.builder()
-                            .seq(item.get("itemSeq").asText())
-                            .entpName(item.get("entpName").asText())
-                            .name(item.get("itemName").asText())
-                            .efcy(item.get("efcyQesitm").asText())
-                            .use(item.get("useMethodQesitm").asText())
-                            .atpn(item.get("atpnQesitm").asText())
-                            .atpnWarn(item.get("atpnWarnQesitm").asText())
-                            .intrc(item.get("intrcQesitm").asText())
-                            .se(item.get("seQesitm").asText())
-                            .diposit(item.get("depositMethodQesitm").asText())
-                            .image(item.get("itemImage").asText())
-                            .build();
-                    drugDTOS.add(drugDTO);
-                }
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(DrugService.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return drugDTOS;
+        return null;
+        
     }
-
     
     
     /**
