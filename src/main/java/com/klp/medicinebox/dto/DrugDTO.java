@@ -25,4 +25,6 @@ public class DrugDTO {
     private int count; // 수량
     private String buyDate; // 구매 날짜
     private String expirationDate; // 사용기한
+    private String registerDate; // 등록 날짜
+    private String updateDate; // 수정된 날짜
 }

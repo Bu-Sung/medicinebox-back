@@ -34,4 +34,7 @@ public class DosageEntity {
     
     @Column(name = "dosage_count")
     private int count; // 섭취 갯수
+    
+    @Column(name = "possession_id")
+    private Long pid; // 복용 약 제품 고유번호
 }

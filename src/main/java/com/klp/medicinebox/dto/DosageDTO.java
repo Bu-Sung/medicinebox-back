@@ -20,6 +20,7 @@ public class DosageDTO {
     private String userName; // 복용자 이름
     private String drugName; // 약품 이름
     private String seq; // 복용 약 제품 코드
-    private LocalDateTime date; // 섭취 날짜 시간
+    private String date; // 섭취 날짜 시간
     private int count; // 섭취 갯수
+    private Long pid; // 복용 약 제품 고유번호
 }

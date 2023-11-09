@@ -5,6 +5,9 @@ import com.klp.medicinebox.entity.DosageEntity;
 import com.klp.medicinebox.entity.DrugEntity;
 import com.klp.medicinebox.repository.DosageRepository;
 import com.klp.medicinebox.repository.DrugRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,14 +34,15 @@ public class DosageService {
         List<DosageEntity> dosageEntities = dosageRepository.findByUid(uid);
         // 2. DTO로 변환해서 리스트로 반환
         for (DosageEntity dosageEntity : dosageEntities) {
-            DrugEntity drugEntity = drugRepository.findByUidAndSeq(dosageEntity.getSeq(), uid);
+            DrugEntity drugEntity = drugRepository.findByPid(dosageEntity.getPid());
             
             dosageDTOS.add(DosageDTO.builder()
                     .did(dosageEntity.getDid())
                     .userName(dosageEntity.getName())
                     .drugName(drugEntity.getName())
+                    .pid(dosageEntity.getPid())
                     .seq(dosageEntity.getSeq())
-                    .date(dosageEntity.getDate())
+                    .date(dosageEntity.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")))
                     .count(dosageEntity.getCount())
                     .build());
                    
@@ -58,14 +62,15 @@ public class DosageService {
         // 1. 복용 목록에 맞는 아이디 정보 불러와서 반환
         DosageEntity dosageEntity = dosageRepository.findByDid(did);
         
-        DrugEntity drugEntity = drugRepository.findByUidAndSeq(dosageEntity.getSeq(), uid);
+        DrugEntity drugEntity = drugRepository.findByPid(dosageEntity.getPid());
 
         DosageDTO dosageDTO = DosageDTO.builder()
                 .did(dosageEntity.getDid())
                 .userName(dosageEntity.getName())
                 .drugName(drugEntity.getName())
+                .pid(dosageEntity.getPid())
                 .seq(dosageEntity.getSeq())
-                .date(dosageEntity.getDate())
+                .date(dosageEntity.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")))
                 .count(dosageEntity.getCount())
                 .build();
         
@@ -86,10 +91,26 @@ public class DosageService {
         DosageEntity dosageEntity = DosageEntity.builder()
                 .uid(uid)
                 .name(dosageDTO.getUserName())
+                .pid(dosageDTO.getPid())
                 .seq(dosageDTO.getSeq())
-                .date(dosageDTO.getDate())
+                .date(LocalDateTime.parse(dosageDTO.getDate()))
                 .count(dosageDTO.getCount()) 
                 .build();
+        
+        
+        
+        // 복용시 drug 약 갯수 차감 
+        if(dosageRepository.save(dosageEntity) != null) {
+            DrugEntity drugEntity = drugRepository.findByPid(dosageDTO.getPid());
+            if (drugEntity != null) {
+                drugEntity.setCount(drugEntity.getCount() - dosageDTO.getCount());
+                try{
+                    drugRepository.save(drugEntity);
+                } catch(Exception e) {
+                    return false;
+                }
+            }
+        }   
         
         // 2. 저장 후 결과 반환
         return dosageRepository.save(dosageEntity) != null;

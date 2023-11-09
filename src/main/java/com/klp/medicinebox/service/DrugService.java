@@ -85,7 +85,7 @@ public class DrugService {
             } else if (type == 3) {/* 효능 */
                 urlBuilder.append("&" + URLEncoder.encode("efcyQesitm", "UTF-8") + "=" + URLEncoder.encode(search, "UTF-8"));
                 /*이 약의 효능은 무엇입니까?*/
-            }
+            } 
             
             urlBuilder.append("&" + URLEncoder.encode("type", "UTF-8") + "=" + URLEncoder.encode("json", "UTF-8"));
             /*응답데이터 형식(xml/json) Default:xml*/
@@ -279,6 +279,8 @@ public class DrugService {
                     .count(drugEntity.getCount())
                     .buyDate(drugEntity.getBuyDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                     .expirationDate(drugEntity.getExpirationDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                    .registerDate(drugEntity.getRegisterDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                    .updateDate(drugEntity.getUpdateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                     .build());
         }
 
@@ -295,10 +297,10 @@ public class DrugService {
      * @author 박채빈
      *
      */
-    public DrugDTO getMyDrugInfo(Long pid, String uid) {
+    public DrugDTO getMyDrugInfo(Long pid) {
         // 1. 제품 코드를 이용하여 약품 검색
         // 2. 해당 제품의 정보(DrugEntity랑 PossessionEntity를 join)를 반환
-        DrugEntity drugEntity = drugRepository.findByUidAndPid(pid, uid);
+        DrugEntity drugEntity = drugRepository.findByPid(pid);
 
         DrugDTO drugDTO = DrugDTO.builder()
             .pid(drugEntity.getPid())
@@ -316,12 +318,14 @@ public class DrugService {
             .count(drugEntity.getCount())
             .buyDate(drugEntity.getBuyDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
             .expirationDate(drugEntity.getExpirationDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+            .registerDate(drugEntity.getRegisterDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+            .updateDate(drugEntity.getUpdateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
             .build();
         
         return drugDTO;
     }
-
     
+
     /**
      * 선택한 보유 제품의 정보를 변경하는 함수
      *
@@ -331,9 +335,9 @@ public class DrugService {
      * @author 박채빈
      *
      */
-    public boolean updateMyDrug(DrugDTO drugDTO, String uid) {
+    public boolean updateMyDrug(DrugDTO drugDTO) {
         // 1. 제품 정보를 통해 제품을 등록(updateDate를 현재 시각으로 변경)
-        DrugEntity drugEntity = drugRepository.findByUidAndPid(drugDTO.getPid(), uid);
+        DrugEntity drugEntity = drugRepository.findByPid(drugDTO.getPid());
             
         if (drugEntity != null) {
             drugEntity.setCount(drugDTO.getCount());
@@ -357,9 +361,9 @@ public class DrugService {
      * @author 박채빈
      *
      */
-    public boolean deleteMyDrug(Long pid, String uid) {
+    public boolean deleteMyDrug(Long pid) {
         // 1. 제품 정보를 통해 제품을 삭제
-        DrugEntity drugEntity = drugRepository.findByUidAndPid(pid, uid);
+        DrugEntity drugEntity = drugRepository.findByPid(pid);
         // 2. 제품 등록 성공 여부를 반환
         if (drugEntity != null) {
             drugRepository.delete(drugEntity);
@@ -367,8 +371,8 @@ public class DrugService {
         }
         return false;
     }
-
     
+
     
     /**
      * medicine shape 엑셀 파일 데이터 DB에 저장 
