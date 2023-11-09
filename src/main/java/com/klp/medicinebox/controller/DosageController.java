@@ -2,6 +2,7 @@ package com.klp.medicinebox.controller;
 
 import com.klp.medicinebox.SessionManager;
 import com.klp.medicinebox.dto.DosageDTO;
+import com.klp.medicinebox.dto.MixtureDTO;
 import com.klp.medicinebox.service.DosageService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +43,12 @@ public class DosageController {
         return dosageService.addDosage(dosageDTO, user_id);
     }
       
+    // 병용 금기 확인          
+    @PostMapping("/dosage/getProhibitList")
+    public @ResponseBody List<MixtureDTO> getProhibitList(@RequestBody DosageDTO dosageDTO){
+        return dosageService.getProhibitList(dosageDTO, user_id);
+    }        
+    
+    
     
 }
