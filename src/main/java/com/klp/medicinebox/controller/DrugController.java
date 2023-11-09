@@ -31,6 +31,16 @@ public class DrugController {
     public @ResponseBody List<DrugDTO> searchDrugList(@RequestParam("type") int type, @RequestParam("search") String search) {
         return drugService.searchDrugList(type, search);
     }     
+//    @GetMapping("/drug/searchDrugList")
+//    public @ResponseBody List<DrugDTO> searchDrugList(@RequestParam("type") int type, @RequestParam("search") String search) {
+//        List<DrugDTO> result = drugService.searchDrugList(type, search);
+//
+//        if (result.isEmpty()) {
+//            result = drugService.searchDrugList2(type, search);
+//        }
+//
+//        return result;
+//    }
 
     
     // 약품의 모양으로 검색 

@@ -10,18 +10,8 @@ import com.klp.medicinebox.repository.DrugRepository;
 import com.klp.medicinebox.repository.ShapeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -35,10 +25,6 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -142,8 +128,8 @@ public class DrugService {
         return drugDTOS;
     }
 
-    
-    
+      
+   
     /**
      * 약품의 모양으로 검색
      *
@@ -172,8 +158,16 @@ public class DrugService {
 
                 ShapeDTO searchResult = new ShapeDTO();
                 searchResult.setSeq(shapeEntity.getSeq());
-                searchResult.setName(shapeEntity.getName());
+                searchResult.setForm(shapeEntity.getForm());
                 searchResult.setImage(shapeEntity.getImage());
+                searchResult.setFrontPrint(shapeEntity.getFrontPrint());
+                searchResult.setBackPrint(shapeEntity.getBackPrint());
+                searchResult.setShape(shapeEntity.getShape());
+                searchResult.setFrontColor(shapeEntity.getFrontColor());
+                searchResult.setBackColor(shapeEntity.getBackColor());
+                searchResult.setFrontLine(shapeEntity.getFrontLine());
+                searchResult.setBackLine(shapeEntity.getBackLine()); 
+                searchResult.setName(shapeEntity.getName());
 
                 shapeDTOs.add(searchResult);
             }
@@ -435,5 +429,85 @@ public class DrugService {
     }
 
 
- 
+    
+     public List<DrugDTO> searchDrugList2(int type, String search) {
+        List<DrugDTO> drugDTOS = new ArrayList<>();
+        try {
+            // URL
+            StringBuilder urlBuilder = new StringBuilder("https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService04/getDrugPrdtPrmsnDtlInq03");
+            // Service Key
+            urlBuilder.append("?" + URLEncoder.encode("serviceKey", "UTF-8") + "=sDtf81qz1ObM5WdrhmQaFgaa9zJ1%2BlOhV1%2B%2FAoKwlPHXITobuVPCQicwzsOSKp7UR%2BQyctLfoGDQ8aMjVjM%2FxQ%3D%3D");
+            // 페이지번호
+            urlBuilder.append("&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8"));
+            // 한 페이지 결과 수
+            urlBuilder.append("&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8"));
+
+            if (type == 1) {
+                // 품목기준코드
+                urlBuilder.append("&" + URLEncoder.encode("item_seq", "UTF-8") + "=" + URLEncoder.encode(search, "UTF-8"));
+            } else if (type == 2) {
+                // 제품명
+                urlBuilder.append("&" + URLEncoder.encode("item_name", "UTF-8") + "=" + URLEncoder.encode(search, "UTF-8"));
+            }
+
+            urlBuilder.append("&" + URLEncoder.encode("type", "UTF-8") + "=" + URLEncoder.encode("json", "UTF-8"));
+            // 응답데이터 형식(xml/json) Default:xml
+
+            URL url = new URL(urlBuilder.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Content-type", "application/json");
+            conn.setRequestProperty("Accept-Charset", "UTF-8");
+
+            BufferedReader rd;
+            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            } else {
+                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+            }
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            rd.close();
+            conn.disconnect();
+
+            String jsonResponse = sb.toString();
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(jsonResponse);
+
+            JsonNode bodyNode = rootNode.path("body");
+            if (!bodyNode.isMissingNode()) {
+                JsonNode itemsArray = bodyNode.path("items");
+
+                for (JsonNode item : itemsArray) {
+                    DrugDTO drugDTO = DrugDTO.builder()
+                            .seq(item.get("ITEM_SEQ").asText())
+                            .entpName(item.get("ENTP_NAME").asText())
+                            .name(item.get("ITEM_NAME").asText())
+                            
+                            .efcy(item.get("EE_DOC_DATA").asText())
+                            .use(item.get("UD_DOC_DATA").asText())
+                            .atpn(item.get("NB_DOC_DATA").asText())
+                            
+                            // .atpnWarn(item.get("atpnWarnQesitm").asText())
+                            // .intrc(item.get("intrcQesitm").asText())  // NB_DOC_DATA 5. 상호작용 
+                            // .se(item.get("seQesitm").asText())  // NB_DOC_DATA 3. 이상반응 
+                            
+                            .diposit(item.get("STORAGE_METHOD").asText())
+                            .image(item.get("INSERT_FILE").asText())
+                            .build();
+
+                    drugDTOS.add(drugDTO);
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(DrugService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return drugDTOS;
+    }
+
+
 }
