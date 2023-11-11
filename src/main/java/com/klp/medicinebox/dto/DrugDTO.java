@@ -27,4 +27,6 @@ public class DrugDTO {
     private String expirationDate; // 사용기한
     private String registerDate; // 등록 날짜
     private String updateDate; // 수정된 날짜
+    
+    private String drugFile;  // 약 정보 파일 
 }

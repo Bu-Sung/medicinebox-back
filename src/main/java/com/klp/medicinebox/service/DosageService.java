@@ -13,7 +13,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
@@ -136,6 +135,7 @@ public class DosageService {
     
     /**
      * 입력값에 대한 병용 금기 리스트 검색 
+     * 
      * @param type 1 : 제품 기준 코드 검색, 2 : 제품 이름 검색 
      * @param search  
      * @return 검색된 리스트 반환 
@@ -211,23 +211,22 @@ public class DosageService {
     
 
     /**
-     * 오늘 복용한 복약 리스트 
+     * 해당 날짜의 복용한 복약 리스트 
+     * 
      * @param uid 사용자 아이디 
      * @return 
      */
-    public List<DosageDTO> getTodaysDosageList(String uid){
+    public List<DosageDTO> getTodaysDosageList(DosageDTO dosageDTO, String uid){
         List<DosageDTO> dosageDTOS = new ArrayList<>();
 
-        // 1. 아이디에 맞는 복용 목록 가져오기
         List<DosageEntity> dosageEntities = dosageRepository.findByUid(uid);
 
-        // 2. DTO로 변환해서 오늘 날짜에 해당하는 복용 기록만 리스트로 반환
         for (DosageEntity dosageEntity : dosageEntities) {
             DrugEntity drugEntity = drugRepository.findByPid(dosageEntity.getPid());
-            LocalDate dosageDate = dosageEntity.getDate().toLocalDate(); // 복용한 날짜
+            String dosageDate = dosageEntity.getDate().toLocalDate().toString(); // 복용한 날짜
 
-            // 오늘 복용한 기록만 가져오기
-            if (dosageDate.equals(LocalDate.now())) {
+            // 해당 날짜의 복용한 기록만 가져오기
+            if (dosageDate.equals(dosageDTO.getDate().substring(0, 10))) {
                 dosageDTOS.add(DosageDTO.builder()
                         .did(dosageEntity.getDid())
                         .userName(dosageEntity.getName())
@@ -245,22 +244,21 @@ public class DosageService {
 
     
     /**
-     * 오늘 복용한 약들과 현재 복용할 약에 대해 병용 금기인 약품이 존재하는지 확인  
+     * 해당 날짜(dosageDTO.date)의 복용한 약들과 현재 복용할 약에 대해 병용 금기인 약품이 존재하는지 확인 
+     * 
      * @param dosageDTO 복약 정보
      * @param uid 사용자 아이디 
      * @return 병용 금기 리스트 
      */
     public List<MixtureDTO> getProhibitList(DosageDTO dosageDTO, String uid) {
-        
+
         // 현재 복용할 약에 대한 병용 금기 리스트 
         List<MixtureDTO> prohibitList = searchProhibitList(1, dosageDTO.getSeq());
 
         if (prohibitList == null || prohibitList.isEmpty()) {  // 병용 금기 리스트가 없는 경우 
-        //    addDosage(dosageDTO, uid);
             return new ArrayList<>();  // 빈 목록 반환
         } else {  // 병용 금기 리스트가 있는 경우 
-
-            List<DosageDTO> todaysDosageDTOS = getTodaysDosageList(uid);  // 오늘 복용한 약 리스트 
+            List<DosageDTO> todaysDosageDTOS = getTodaysDosageList(dosageDTO, uid);  // 해당 날짜의 복용한 약 리스트 
             List<MixtureDTO> mixtureDTOS = new ArrayList<>();
 
             // 오늘 복용한 약 리스트 중 병용 금기 리스트에 해당하는 제품이 있는지 확인 
@@ -273,12 +271,7 @@ public class DosageService {
                 }
             }
 
-//        // 병용 금기에 해당 제품이 없다면 복약 추가
-//        if (mixtureDTOS.isEmpty()) {
-//            addDosage(dosageDTO, uid);
-//        }
-
-        return mixtureDTOS;
+            return mixtureDTOS;
         }
     }
 
