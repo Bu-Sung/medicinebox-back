@@ -195,10 +195,12 @@ public class DrugService {
         
         // 2. 해당 제품의 정보를 반환
         if(drugDTOS.isEmpty()) {
-            return null;
-        } else{
-            return drugDTOS.get(0);
-        }
+            drugDTOS = searchDrugList2(1, seq);
+            if(drugDTOS.isEmpty()) {
+                return null;
+            }
+        } 
+        return drugDTOS.get(0);
     }
 
     
