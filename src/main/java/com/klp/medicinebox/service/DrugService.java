@@ -516,9 +516,10 @@ public class DrugService {
                         drugDTO.setAtpn(extractSelectText(item.get("NB_DOC_DATA").asText(), "4. 일반적 주의"));
                         drugDTO.setIntrc(extractSelectText(item.get("NB_DOC_DATA").asText(), "5. 상호작용"));
                         drugDTO.setSe(extractSelectText(item.get("NB_DOC_DATA").asText(), "3. 이상반응"));
-                    } else if (item.get("ETC_OTC_CODE").asText().equals("일반의약품")) {
-                        drugDTO.setDrugFile(item.get("INSERT_FILE").asText());
-                    }
+                    } 
+//                    else if (item.get("ETC_OTC_CODE").asText().equals("일반의약품")) {
+//                        drugDTO.setDrugFile(item.get("INSERT_FILE").asText());
+//                    }
 
                     drugDTOS.add(drugDTO);
                 }
