@@ -32,94 +32,131 @@ public class DrugController {
     String user_id = "1111";
     
 
-    // ì œí’ˆ ê²€ìƒ‰
-    @GetMapping("/drug/searchDrugList")
-    public @ResponseBody List<DrugDTO> searchDrugList(@RequestParam("type") int type, @RequestParam("search") String search) {
-        return drugService.searchDrugList(type, search);
-    }     
+//    // Á¦Ç° °Ë»ö
 //    @GetMapping("/drug/searchDrugList")
 //    public @ResponseBody List<DrugDTO> searchDrugList(@RequestParam("type") int type, @RequestParam("search") String search) {
 //        List<DrugDTO> result = drugService.searchDrugList(type, search);
 //
-//        if (result.isEmpty()) {
+//        if (result.isEmpty()) {  // searchDrugList °Ë»ö °á°ú°¡ ¾ø´Â °æ¿ì¸¸ searchDrugList2 °Ë»ö ÇÔ¼ö ½ÇÇà 
 //            result = drugService.searchDrugList2(type, search);
 //        }
 //
 //        return result;
 //    }
 
+    // ÅØ½ºÆ®(Á¦Ç°¸í)·Î °Ë»ö 
+    @GetMapping("/drug/textSearchList")
+    public @ResponseBody List<DrugDTO> textSearchList(@RequestParam("search") String search) {
+        List<DrugDTO> result = drugService.searchDrugList(2, search);
+
+        if (result.isEmpty()) {  // searchDrugList °Ë»ö °á°ú°¡ ¾ø´Â °æ¿ì¸¸ searchDrugList2 °Ë»ö ÇÔ¼ö ½ÇÇà 
+            result = drugService.searchDrugList2(2, search);
+        }
+
+        return result;
+    }
     
-    // ì•½í’ˆì˜ ëª¨ì–‘ìœ¼ë¡œ ê²€ìƒ‰ 
+    // Áõ»óÀ¸·Î °Ë»ö
+    @GetMapping("/drug/efcySearchList")
+    public @ResponseBody List<DrugDTO> efcySearchList(@RequestParam("search") String search) {
+        List<DrugDTO> result = drugService.searchDrugList(3, search);
+
+        return result;
+    }
+    
+    
+    // ¾àÇ°ÀÇ ¸ğ¾çÀ¸·Î °Ë»ö 
     @PostMapping("/drug/getDrugFromShape")
     public @ResponseBody List<ShapeDTO> getDrugFromShape(@RequestBody ShapeDTO shapeDTO) {
         return drugService.getDrugFromShape(shapeDTO);
     }
     
 
-    // ëª¨ì–‘ ê²€ìƒ‰ ê²°ê³¼ ì¤‘ ì„ íƒí•œ ì •ë³´ 
+    // ¼±ÅÃÇÑ Á¦Ç°ÀÇ Á¤º¸¸¦ ¹İÈ¯
     @GetMapping("/drug/getDrugInfo")
     public @ResponseBody DrugDTO getDrugInfo(@RequestParam("seq") String seq) {
         return drugService.getDrugInfo(seq);
     }
 
     
-    // ëª¨ì–‘ ê²€ìƒ‰ ê²°ê³¼ ì•½ ì¶”ê°€ 
+    // ¼±ÅÃÇÑ Á¦Ç°À» ÀÚ½ÅÀÇ Á¦Ç° ¸®½ºÆ®¿¡ Ãß°¡
     @PostMapping("/drug/addMyDrug")
     public @ResponseBody boolean addMyDrug(@RequestBody DrugDTO drugDTO) {
         return drugService.addMyDrug(drugDTO,user_id);
     }
     
     
-    // ìì‹ ì´ ë“±ë¡í•œ ì œí’ˆ ë¦¬ìŠ¤íŠ¸
+    // ÀÚ½ÅÀÌ µî·ÏÇÑ Á¦Ç° ¸®½ºÆ® (filter = µî·Ï¼ø, ÃÖ½Å¼ø) 
     @GetMapping("/drug/getMyDrugList")
     public @ResponseBody List<DrugDTO> getMyDrugList(@RequestParam("filter") String filter) {
         return drugService.getMyDrugList(user_id, filter);
     }
     
-    
-    // ì„ íƒí•œ ë³´ìœ  ì œí’ˆ ì •ë³´
+   
+    // ¼±ÅÃÇÑ º¸À¯ Á¦Ç° Á¤º¸
     @GetMapping("/drug/getMyDrugInfo")
     public @ResponseBody DrugDTO getMyDrugInfo(@RequestParam("pid") Long pid) {
         return drugService.getMyDrugInfo(pid);
     }
     
     
-    // ì„ íƒí•œ ë³´ìœ  ì œí’ˆ ì •ë³´ ë³€ê²½
+    // ¼±ÅÃÇÑ º¸À¯ Á¦Ç° Á¤º¸ º¯°æ
     @PostMapping("/drug/updateMyDrug")
     public @ResponseBody boolean updateMyDrug(@RequestBody DrugDTO drugDTO) {
         return drugService.updateMyDrug(drugDTO);
     }
     
     
-    // ìì‹ ì˜ ë³´ìœ  ì œí’ˆ ì œê±°
+    // ÀÚ½ÅÀÇ º¸À¯ Á¦Ç° Á¦°Å
     @GetMapping("/drug/deleteMyDrug")
     public @ResponseBody boolean deleteMyDrug(@RequestParam("pid") Long pid) {
         return drugService.deleteMyDrug(pid);
     }
     
-    //OCRë¡œ ì œí’ˆ ì°¾ê¸°
+
+    //OCR·Î Á¦Ç° Ã£±â
     @PostMapping("/drug/ocr")
     public @ResponseBody List<DrugDTO> getOCRSearch(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request) throws IOException {
         String rootPath = request.getSession().getServletContext().getRealPath("/");
 
-        // íŒŒì¼ì„ ì €ì¥í•  í´ë”ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+        // ÆÄÀÏÀ» ÀúÀåÇÒ Æú´õ¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
         File uploadDir = new File(rootPath + "/WEB-INF/productupload");
 
-        // ì§€ì •ëœ í´ë”ê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ìƒì„±í•©ë‹ˆë‹¤.
+        // ÁöÁ¤µÈ Æú´õ°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é »ı¼ºÇÕ´Ï´Ù.
         if (!uploadDir.exists()) {
             uploadDir.mkdirs();
         }
 
-        // ì €ì¥í•  íŒŒì¼ì˜ ê²½ë¡œë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
+        // ÀúÀåÇÒ ÆÄÀÏÀÇ °æ·Î¸¦ »ı¼ºÇÕ´Ï´Ù.
         File fileToSave = new File(uploadDir, multipartFile.getOriginalFilename());
 
-        // MultipartFileì˜ ë‚´ìš©ì„ ì§€ì •ëœ íŒŒì¼ì— ì €ì¥í•©ë‹ˆë‹¤.
+        // MultipartFileÀÇ ³»¿ëÀ» ÁöÁ¤µÈ ÆÄÀÏ¿¡ ÀúÀåÇÕ´Ï´Ù.
         multipartFile.transferTo(fileToSave);
 
         List<DrugDTO> list =ocrService.getOCRResultDrug(fileToSave);
 
         return list;
     }
-    
-    
+
+    // ¼ö·® ºÎÁ· ¾à ¸®½ºÆ® 
+    @GetMapping("/drug/getMyDrugListCount")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListCount() {
+        return drugService.getDrugListByType(user_id, 1);
+    }
+
+    // À¯Åë±âÇÑ ÀÓ¹Ú ¾à ¸®½ºÆ® 
+    @GetMapping("/drug/getMyDrugListExpirationDate")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListExpirationDate() {
+        return drugService.getDrugListByType(user_id, 2);
+    }
+
+    // À¯Åë±âÇÑ Áö³­ ¾à ¸®½ºÆ® 
+    @GetMapping("/drug/getMyDrugListPassExpirationDate")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListPassExpirationDate() {
+        return drugService.getDrugListByType(user_id, 3);
+    }
+
 }

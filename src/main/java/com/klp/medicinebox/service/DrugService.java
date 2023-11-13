@@ -25,6 +25,10 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -190,10 +194,12 @@ public class DrugService {
         
         // 2. 해당 제품의 정보를 반환
         if(drugDTOS.isEmpty()) {
-            return null;
-        } else{
-            return drugDTOS.get(0);
-        }
+            drugDTOS = searchDrugList2(1, seq);
+            if(drugDTOS.isEmpty()) {
+                return null;
+            }
+        } 
+        return drugDTOS.get(0);
     }
 
     
@@ -427,10 +433,23 @@ public class DrugService {
         return "";
     }
 
-
     
-     public List<DrugDTO> searchDrugList2(int type, String search) {
+
+    /**
+     * 제품 검색 2 (searchDrugList 함수 검색 결과 없을 경우) 
+     * 
+     * @param type 1 : 제품 기준 코드 검색, 2 : 제품 이름 검색 
+     * @param search 입력값 
+     * @return 검색된 리스트 반환 
+     */
+    public List<DrugDTO> searchDrugList2(int type, String search) {
         List<DrugDTO> drugDTOS = new ArrayList<>();
+        
+        // type이 1, 2가 아닌 경우 빈 리스트 반환
+        if (type != 1 && type != 2) {
+            return drugDTOS;
+        }
+    
         try {
             // URL
             StringBuilder urlBuilder = new StringBuilder("https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService04/getDrugPrdtPrmsnDtlInq03");
@@ -482,30 +501,175 @@ public class DrugService {
                 JsonNode itemsArray = bodyNode.path("items");
 
                 for (JsonNode item : itemsArray) {
+
                     DrugDTO drugDTO = DrugDTO.builder()
                             .seq(item.get("ITEM_SEQ").asText())
                             .entpName(item.get("ENTP_NAME").asText())
                             .name(item.get("ITEM_NAME").asText())
-                            
-                            .efcy(item.get("EE_DOC_DATA").asText())
-                            .use(item.get("UD_DOC_DATA").asText())
-                            .atpn(item.get("NB_DOC_DATA").asText())
-                            
-                            // .atpnWarn(item.get("atpnWarnQesitm").asText())
-                            // .intrc(item.get("intrcQesitm").asText())  // NB_DOC_DATA 5. 상호작용 
-                            // .se(item.get("seQesitm").asText())  // NB_DOC_DATA 3. 이상반응 
-                            
+                            .efcy(extractText(item.get("EE_DOC_DATA").asText()))
+                            .use(extractText(item.get("UD_DOC_DATA").asText()))
                             .diposit(item.get("STORAGE_METHOD").asText())
-                            .image(item.get("INSERT_FILE").asText())
+                            .image(shapeRepository.findImageBySeq(item.get("ITEM_SEQ").asText()))
                             .build();
+
+                    if (item.get("ETC_OTC_CODE").asText().equals("전문의약품")) {
+                        drugDTO.setAtpnWarn(extractSelectText(item.get("NB_DOC_DATA").asText(), "1. 다음 환자에는 투여하지 말 것.") + "\n" + extractSelectText(item.get("NB_DOC_DATA").asText(), "2. 다음 환자에는 신중히 투여할 것."));
+                        drugDTO.setAtpn(extractSelectText(item.get("NB_DOC_DATA").asText(), "4. 일반적 주의"));
+                        drugDTO.setIntrc(extractSelectText(item.get("NB_DOC_DATA").asText(), "5. 상호작용"));
+                        drugDTO.setSe(extractSelectText(item.get("NB_DOC_DATA").asText(), "3. 이상반응"));
+                    } 
+//                    else if (item.get("ETC_OTC_CODE").asText().equals("일반의약품")) {
+//                        drugDTO.setDrugFile(item.get("INSERT_FILE").asText());
+//                    }
 
                     drugDTOS.add(drugDTO);
                 }
+
             }
         } catch (Exception ex) {
             Logger.getLogger(DrugService.class.getName()).log(Level.SEVERE, null, ex);
         }
         return drugDTOS;
     }
+
+     
+    /**
+     * ARTICLE 태그의 title과 PARAGRAPH 태그의 텍스트 추출
+     * 
+     * @param input
+     * @return 추출한 텍스트 
+     */
+    public String extractText(String input) {
+
+        Document doc = Jsoup.parse(input);
+        // SECTION 태그 선택
+        Elements sections = doc.select("SECTION");
+
+        StringBuilder extractedText = new StringBuilder();
+
+        // ARTICLE 태그의 title과 PARAGRAPH 태그의 텍스트 추출
+        for (Element section : sections) {
+            Elements articles = section.select("ARTICLE");
+            for (Element article : articles) {
+                String articleTitle = article.attr("title");
+
+                // ARTICLE의 title 추가
+                if (!articleTitle.isEmpty()) {
+                    extractedText.append(articleTitle);
+                }
+
+                // PARAGRAPH 태그 텍스트 추가
+                Elements paragraphs = article.select("PARAGRAPH");
+                for (Element paragraph : paragraphs) {
+                    // tbody 태그 제외 
+                    if (!paragraph.toString().contains("<tbody>")) {
+                        extractedText.append(paragraph.text()).append("\n");
+                    }
+                }
+                extractedText.append("\n");
+            }
+        }
+
+        return extractedText.toString().trim();
+    }
+
+    
+    /**
+     * articleTitle인 해당 ARTICLE 태그의 title과 PARAGRAPH 태그의 텍스트 추출
+     * 
+     * @param input
+     * @param articleTitle 추출할 ARTICLE 태그의 title
+     * @return 추출한 텍스트 
+     */
+    public String extractSelectText(String input, String articleTitle) {
+
+        Document doc = Jsoup.parse(input);
+        // DOC 태그 선택
+        Element docElement = doc.selectFirst("DOC");
+
+        StringBuilder extractedText = new StringBuilder();
+
+        // title이 articleTitle과 일치하는 ARTICLE 태그 
+        Elements articleElements = docElement.select("ARTICLE[title='" + articleTitle + "']");
+
+        for (Element articleElement : articleElements) {
+            // articleTitle 추가
+            extractedText.append(articleTitle).append("\n");
+
+            // ARTICLE 내의 PARAGRAPH 태그들의 텍스트 추가
+            Elements paragraphs = articleElement.select("PARAGRAPH");
+            for (Element paragraph : paragraphs) {
+                // tbody 태그 제외 
+                if (!paragraph.toString().contains("<tbody>")) {
+                    extractedText.append(paragraph.text()).append("\n");
+                }
+            }
+            extractedText.append("\n");
+        }
+
+        return extractedText.toString().trim();
+    }
+
+         
+    
+    
+    /**
+     * 약 수량 부족, 유통기한 임박 약 리스트
+     *
+     * @param uid
+     * @param type 1: 수량 부족, 2 : 유통기한 임박, 3 : 유통기한 지남
+     * @return
+     */
+    public List<DrugDTO> getDrugListByType(String uid, int type) {
+        List<DrugDTO> drugDTOS = new ArrayList<>();
+
+        List<DrugEntity> drugEntities = drugRepository.findByUid(uid);
+
+        LocalDate term = LocalDate.now().plusDays(8);
+
+        for (DrugEntity drugEntity : drugEntities) {
+
+            // 수량 부족 (2개이하) 
+            if (type == 1 && drugEntity.getCount() <= 2) {
+                listBuild(drugDTOS, drugEntity);
+            }
+
+            // 유통기한 임박 (7일) 
+            if (type == 2 && drugEntity.getCount() > 0
+                    && !drugEntity.getExpirationDate().isBefore(LocalDate.now()) && drugEntity.getExpirationDate().isBefore(term)) {
+                listBuild(drugDTOS, drugEntity);
+            }
+
+            // 유통기한 지남 
+            if (type == 3 && drugEntity.getCount() > 0 && drugEntity.getExpirationDate().isBefore(LocalDate.now())) {
+                listBuild(drugDTOS, drugEntity);
+            }
+        }
+
+        return drugDTOS;
+    }
+
+    public void listBuild(List<DrugDTO> drugDTOS, DrugEntity drugEntity) {
+        drugDTOS.add(DrugDTO.builder()
+                .pid(drugEntity.getPid())
+                .seq(drugEntity.getSeq())
+                .entpName(drugEntity.getEntpName())
+                .name(drugEntity.getName())
+                .efcy(drugEntity.getEfcy())
+                .use(drugEntity.getUse())
+                .atpnWarn(drugEntity.getAtpnWarn())
+                .atpn(drugEntity.getAtpn())
+                .intrc(drugEntity.getIntrc())
+                .se(drugEntity.getSe())
+                .diposit(drugEntity.getDiposit())
+                .image(drugEntity.getImage())
+                .count(drugEntity.getCount())
+                .buyDate(drugEntity.getBuyDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .expirationDate(drugEntity.getExpirationDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .registerDate(drugEntity.getRegisterDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .updateDate(drugEntity.getUpdateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .build());
+    }
+
 
 }
