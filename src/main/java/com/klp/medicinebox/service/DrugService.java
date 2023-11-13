@@ -611,6 +611,68 @@ public class DrugService {
         return extractedText.toString().trim();
     }
 
-     
-     
+         
+    
+    
+    /**
+     * 약 수량 부족, 유통기한 임박 약 리스트
+     *
+     * @param uid
+     * @param type 1: 수량 부족, 2 : 유통기한 임박, 3 : 유통기한 지남
+     * @return
+     */
+    public List<DrugDTO> getDrugListByType(String uid, int type) {
+        List<DrugDTO> drugDTOS = new ArrayList<>();
+
+        List<DrugEntity> drugEntities = drugRepository.findByUid(uid);
+
+        LocalDate term = LocalDate.now().plusDays(8);
+
+        for (DrugEntity drugEntity : drugEntities) {
+
+            // 수량 부족 (2개이하) 
+            if (type == 1 && drugEntity.getCount() <= 2) {
+                listBuild(drugDTOS, drugEntity);
+            }
+
+            // 유통기한 임박 (7일) 
+            if (type == 2 && drugEntity.getCount() > 0
+                    && !drugEntity.getExpirationDate().isBefore(LocalDate.now()) && drugEntity.getExpirationDate().isBefore(term)) {
+                listBuild(drugDTOS, drugEntity);
+            }
+
+            // 유통기한 지남 
+            if (type == 3 && drugEntity.getCount() > 0 && drugEntity.getExpirationDate().isBefore(LocalDate.now())) {
+                listBuild(drugDTOS, drugEntity);
+            }
+        }
+
+        return drugDTOS;
+    }
+
+    public void listBuild(List<DrugDTO> drugDTOS, DrugEntity drugEntity) {
+        drugDTOS.add(DrugDTO.builder()
+                .pid(drugEntity.getPid())
+                .seq(drugEntity.getSeq())
+                .entpName(drugEntity.getEntpName())
+                .name(drugEntity.getName())
+                .efcy(drugEntity.getEfcy())
+                .use(drugEntity.getUse())
+                .atpnWarn(drugEntity.getAtpnWarn())
+                .atpn(drugEntity.getAtpn())
+                .intrc(drugEntity.getIntrc())
+                .se(drugEntity.getSe())
+                .diposit(drugEntity.getDiposit())
+                .image(drugEntity.getImage())
+                .count(drugEntity.getCount())
+                .buyDate(drugEntity.getBuyDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .expirationDate(drugEntity.getExpirationDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .registerDate(drugEntity.getRegisterDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .updateDate(drugEntity.getUpdateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .build());
+    }
+
+
+
+    
 }

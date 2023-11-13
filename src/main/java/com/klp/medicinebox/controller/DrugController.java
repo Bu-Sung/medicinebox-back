@@ -86,7 +86,7 @@ public class DrugController {
         return drugService.getMyDrugList(user_id, filter);
     }
     
-    
+   
     // 선택한 보유 제품 정보
     @GetMapping("/drug/getMyDrugInfo")
     public @ResponseBody DrugDTO getMyDrugInfo(@RequestParam("pid") Long pid) {
@@ -108,4 +108,25 @@ public class DrugController {
     }
 
     
+    // 수량 부족 약 리스트 
+    @GetMapping("/drug/getMyDrugListCount")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListCount() {
+        return drugService.getDrugListByType(user_id, 1);
+    }
+
+    // 유통기한 임박 약 리스트 
+    @GetMapping("/drug/getMyDrugListExpirationDate")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListExpirationDate() {
+        return drugService.getDrugListByType(user_id, 2);
+    }
+
+    // 유통기한 지난 약 리스트 
+    @GetMapping("/drug/getMyDrugListPassExpirationDate")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListPassExpirationDate() {
+        return drugService.getDrugListByType(user_id, 3);
+    }
+
 }

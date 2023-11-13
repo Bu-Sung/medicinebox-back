@@ -54,18 +54,18 @@ public class DosageService {
             dosageDTOS.add(DosageDTO.builder()
                     .did(dosageEntity.getDid())
                     .userName(dosageEntity.getName())
-                    .drugName(drugEntity.getName())
+                    .drugName(dosageEntity.getDrugName())
                     .pid(dosageEntity.getPid())
                     .seq(dosageEntity.getSeq())
                     .date(dosageEntity.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")))
                     .count(dosageEntity.getCount())
                     .build());
-                   
-        }
+            
+            }
         return dosageDTOS;
     }
-    
-    
+  
+
     /**
      * 복약 정보를 가져오는 함수(보여줄께 딱히 없어서 삭제 고려 중 가장 나중에 구현)
      * @param did 복약 아이디
@@ -78,11 +78,11 @@ public class DosageService {
         DosageEntity dosageEntity = dosageRepository.findByDid(did);
         
         DrugEntity drugEntity = drugRepository.findByPid(dosageEntity.getPid());
-
+        
         DosageDTO dosageDTO = DosageDTO.builder()
                 .did(dosageEntity.getDid())
                 .userName(dosageEntity.getName())
-                .drugName(drugEntity.getName())
+                .drugName(dosageEntity.getDrugName())
                 .pid(dosageEntity.getPid())
                 .seq(dosageEntity.getSeq())
                 .date(dosageEntity.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")))
@@ -110,6 +110,7 @@ public class DosageService {
                 .seq(dosageDTO.getSeq())
                 .date(LocalDateTime.parse(dosageDTO.getDate()))
                 .count(dosageDTO.getCount()) 
+                .drugName(dosageDTO.getDrugName())
                 .build();
         
         
