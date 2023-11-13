@@ -4,6 +4,7 @@
  */
 package com.klp.medicinebox.service;
 
+import com.klp.medicinebox.dto.DrugDTO;
 import com.klp.medicinebox.dto.Metadata;
 import com.klp.medicinebox.dto.PillResult;
 import com.klp.medicinebox.dto.RequestJson;
@@ -15,12 +16,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.servlet.ServletContext;
-import static org.hibernate.annotations.common.util.impl.LoggerFactory.logger;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,13 +29,15 @@ import org.springframework.web.multipart.MultipartFile;
  * @author qntjd
  */
 @Service
+@RequiredArgsConstructor
 public class AiDrug {
         
     @Autowired
     private ServletContext ctx;
     
-    @Autowired
-    private MainService mainService;
+   
+    private final MainService mainService;
+    private final DrugService drugService;
     
     @Value("${aiDrug.folder}")
     private String aiUploadFolderPath;
@@ -212,5 +213,12 @@ public class AiDrug {
         return drugNameList; 
     }
     
-    
+    public List<DrugDTO> getAiDrugInfo(List<String> names){
+        List<DrugDTO> result = new ArrayList();
+        for(String s : names){
+            result.addAll(drugService.searchDrugList2(2, s));
+        }
+
+        return result;
+    }
 }

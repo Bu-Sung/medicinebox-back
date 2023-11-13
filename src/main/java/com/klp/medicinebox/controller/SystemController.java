@@ -30,7 +30,7 @@ public class SystemController {
 
     @GetMapping("/")
     public String pageMain(Model model) {
-
+        drugService.addMedicineShape();
         //model.addAttribute("list",drugService.searchDrugList(2, "타이레놀"));
         return "index";
     }
@@ -55,15 +55,16 @@ public class SystemController {
         // MultipartFile의 내용을 지정된 파일에 저장합니다.
         multipartFile.transferTo(fileToSave);
 
-        List<DrugDTO> list =ocrService.getOCRResultDrug(fileToSave);
+        List<DrugDTO> list = ocrService.getOCRResultDrug(fileToSave);
         for(DrugDTO d : list){
             System.out.println(d.getName());
         }
     }
     
     @PostMapping(value = "/v1.0/recognition")
-    public @ResponseBody List<String> recognition(@ModelAttribute RequestJson request) {
-        return aiService.getAiDrugName(request);
+    public @ResponseBody List<DrugDTO> recognition(@ModelAttribute RequestJson request) {
+        List<String> names = aiService.getAiDrugName(request);
+        return aiService.getAiDrugInfo(names);
     }
 
 }
