@@ -35,7 +35,6 @@ public class DrugService {
 
     private final DrugRepository drugRepository;
     private final ShapeRepository shapeRepository;
-
     @Value("${medicineShape.folder}")
     private String medicineShapeFolderPath;
 
@@ -508,6 +507,5 @@ public class DrugService {
         }
         return drugDTOS;
     }
-
 
 }
