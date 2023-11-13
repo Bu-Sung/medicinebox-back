@@ -37,7 +37,7 @@ public class DosageController {
     }
     
     
-    // 복약 기록
+    // 복약 기록 추가 
     @PostMapping("/dosage/addDosage")
     public @ResponseBody boolean addDosage(@RequestBody DosageDTO dosageDTO){
         return dosageService.addDosage(dosageDTO, user_id);

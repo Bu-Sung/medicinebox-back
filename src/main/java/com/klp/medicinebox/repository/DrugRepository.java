@@ -23,4 +23,6 @@ public interface DrugRepository extends JpaRepository<DrugEntity, Long> {
     DrugEntity findByUidAndPid(Long pid, String uid);
     
     DrugEntity findByPid(Long pid);
+    
+    List<DrugEntity> findByUid(String uid);
 }

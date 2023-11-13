@@ -21,6 +21,8 @@ public interface ShapeRepository extends JpaRepository<ShapeEntity, String> {
         nativeQuery = true)
     List<ShapeEntity> findSeqByShape(String shape, String form, String frontLine, String frontColor, String backColor, String frontPrint, String backPrint);
    
+    @Query(value = "SELECT drug_image FROM shape WHERE drug_seq = :seq", nativeQuery = true)
+    String findImageBySeq(String seq);
 
 
 }

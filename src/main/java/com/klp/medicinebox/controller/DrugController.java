@@ -32,22 +32,38 @@ public class DrugController {
     String user_id = "1111";
     
 
-    // 제품 검색
-    @GetMapping("/drug/searchDrugList")
-    public @ResponseBody List<DrugDTO> searchDrugList(@RequestParam("type") int type, @RequestParam("search") String search) {
-        return drugService.searchDrugList(type, search);
-    }     
+//    // 제품 검색
 //    @GetMapping("/drug/searchDrugList")
 //    public @ResponseBody List<DrugDTO> searchDrugList(@RequestParam("type") int type, @RequestParam("search") String search) {
 //        List<DrugDTO> result = drugService.searchDrugList(type, search);
 //
-//        if (result.isEmpty()) {
+//        if (result.isEmpty()) {  // searchDrugList 검색 결과가 없는 경우만 searchDrugList2 검색 함수 실행 
 //            result = drugService.searchDrugList2(type, search);
 //        }
 //
 //        return result;
 //    }
 
+    // 텍스트(제품명)로 검색 
+    @GetMapping("/drug/textSearchList")
+    public @ResponseBody List<DrugDTO> textSearchList(@RequestParam("search") String search) {
+        List<DrugDTO> result = drugService.searchDrugList(2, search);
+
+        if (result.isEmpty()) {  // searchDrugList 검색 결과가 없는 경우만 searchDrugList2 검색 함수 실행 
+            result = drugService.searchDrugList2(2, search);
+        }
+
+        return result;
+    }
+    
+    // 증상으로 검색
+    @GetMapping("/drug/efcySearchList")
+    public @ResponseBody List<DrugDTO> efcySearchList(@RequestParam("search") String search) {
+        List<DrugDTO> result = drugService.searchDrugList(3, search);
+
+        return result;
+    }
+    
     
     // 약품의 모양으로 검색 
     @PostMapping("/drug/getDrugFromShape")
@@ -56,27 +72,27 @@ public class DrugController {
     }
     
 
-    // 모양 검색 결과 중 선택한 정보 
+    // 선택한 제품의 정보를 반환
     @GetMapping("/drug/getDrugInfo")
     public @ResponseBody DrugDTO getDrugInfo(@RequestParam("seq") String seq) {
         return drugService.getDrugInfo(seq);
     }
 
     
-    // 모양 검색 결과 약 추가 
+    // 선택한 제품을 자신의 제품 리스트에 추가
     @PostMapping("/drug/addMyDrug")
     public @ResponseBody boolean addMyDrug(@RequestBody DrugDTO drugDTO) {
         return drugService.addMyDrug(drugDTO,user_id);
     }
     
     
-    // 자신이 등록한 제품 리스트
+    // 자신이 등록한 제품 리스트 (filter = 등록순, 최신순) 
     @GetMapping("/drug/getMyDrugList")
     public @ResponseBody List<DrugDTO> getMyDrugList(@RequestParam("filter") String filter) {
         return drugService.getMyDrugList(user_id, filter);
     }
     
-    
+   
     // 선택한 보유 제품 정보
     @GetMapping("/drug/getMyDrugInfo")
     public @ResponseBody DrugDTO getMyDrugInfo(@RequestParam("pid") Long pid) {
@@ -97,6 +113,7 @@ public class DrugController {
         return drugService.deleteMyDrug(pid);
     }
     
+
     //OCR로 제품 찾기
     @PostMapping("/drug/ocr")
     public @ResponseBody List<DrugDTO> getOCRSearch(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request) throws IOException {
@@ -120,4 +137,27 @@ public class DrugController {
 
         return list;
     }
+
+    // 수량 부족 약 리스트 
+    @GetMapping("/drug/getMyDrugListCount")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListCount() {
+        return drugService.getDrugListByType(user_id, 1);
+    }
+
+    // 유통기한 임박 약 리스트 
+    @GetMapping("/drug/getMyDrugListExpirationDate")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListExpirationDate() {
+        return drugService.getDrugListByType(user_id, 2);
+    }
+
+    // 유통기한 지난 약 리스트 
+    @GetMapping("/drug/getMyDrugListPassExpirationDate")
+    public @ResponseBody
+    List<DrugDTO> getMyDrugListPassExpirationDate() {
+        return drugService.getDrugListByType(user_id, 3);
+    }
+
+
 }
