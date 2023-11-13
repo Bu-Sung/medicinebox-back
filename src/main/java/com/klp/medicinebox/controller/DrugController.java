@@ -2,7 +2,9 @@ package com.klp.medicinebox.controller;
 
 import com.klp.medicinebox.SessionManager;
 import com.klp.medicinebox.dto.DrugDTO;
+import com.klp.medicinebox.dto.RequestJson;
 import com.klp.medicinebox.dto.ShapeDTO;
+import com.klp.medicinebox.service.AiDrug;
 import com.klp.medicinebox.service.DrugService;
 import com.klp.medicinebox.service.OCRService;
 import java.io.File;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,6 +31,7 @@ public class DrugController {
     private final SessionManager sessionManager;
     private final DrugService drugService;
     private final OCRService ocrService;
+    private final AiDrug aiService;
     
     String user_id = "1111";
     
@@ -158,6 +162,12 @@ public class DrugController {
     List<DrugDTO> getMyDrugListPassExpirationDate() {
         return drugService.getDrugListByType(user_id, 3);
     }
-
+    
+    // 알약 이미지 인식
+    @PostMapping(value = "/drug/v1.0/recognition")
+    public @ResponseBody List<DrugDTO> recognition(@ModelAttribute RequestJson request) {
+        List<String> names = aiService.getAiDrugName(request);
+        return aiService.getAiDrugInfo(names);
+    }
 
 }
