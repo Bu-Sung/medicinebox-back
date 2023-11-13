@@ -34,37 +34,4 @@ public class SystemController {
         //model.addAttribute("list",drugService.searchDrugList(2, "타이레놀"));
         return "index";
     }
-
-    @PostMapping("/ocr")
-    public @ResponseBody
-      //  void getOCR() throws IOException {
-    void getOCR(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request) throws IOException {
-        String rootPath = request.getSession().getServletContext().getRealPath("/");
-
-        // 파일을 저장할 폴더를 지정합니다.
-        File uploadDir = new File(rootPath + "/WEB-INF/productupload");
-
-        // 지정된 폴더가 존재하지 않으면 생성합니다.
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-
-        // 저장할 파일의 경로를 생성합니다.
-        File fileToSave = new File(uploadDir, multipartFile.getOriginalFilename());
-
-        // MultipartFile의 내용을 지정된 파일에 저장합니다.
-        multipartFile.transferTo(fileToSave);
-
-        List<DrugDTO> list = ocrService.getOCRResultDrug(fileToSave);
-        for(DrugDTO d : list){
-            System.out.println(d.getName());
-        }
-    }
-    
-    @PostMapping(value = "/v1.0/recognition")
-    public @ResponseBody List<DrugDTO> recognition(@ModelAttribute RequestJson request) {
-        List<String> names = aiService.getAiDrugName(request);
-        return aiService.getAiDrugInfo(names);
-    }
-
 }

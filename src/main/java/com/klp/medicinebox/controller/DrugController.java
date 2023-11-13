@@ -2,7 +2,9 @@ package com.klp.medicinebox.controller;
 
 import com.klp.medicinebox.SessionManager;
 import com.klp.medicinebox.dto.DrugDTO;
+import com.klp.medicinebox.dto.RequestJson;
 import com.klp.medicinebox.dto.ShapeDTO;
+import com.klp.medicinebox.service.AiDrug;
 import com.klp.medicinebox.service.DrugService;
 import com.klp.medicinebox.service.OCRService;
 import java.io.File;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,35 +31,36 @@ public class DrugController {
     private final SessionManager sessionManager;
     private final DrugService drugService;
     private final OCRService ocrService;
+    private final AiDrug aiService;
     
     String user_id = "1111";
     
 
-//    // Á¦Ç° °Ë»ö
+//    // ì œí’ˆ ê²€ìƒ‰
 //    @GetMapping("/drug/searchDrugList")
 //    public @ResponseBody List<DrugDTO> searchDrugList(@RequestParam("type") int type, @RequestParam("search") String search) {
 //        List<DrugDTO> result = drugService.searchDrugList(type, search);
 //
-//        if (result.isEmpty()) {  // searchDrugList °Ë»ö °á°ú°¡ ¾ø´Â °æ¿ì¸¸ searchDrugList2 °Ë»ö ÇÔ¼ö ½ÇÇà 
+//        if (result.isEmpty()) {  // searchDrugList ê²€ìƒ‰ ê²°ê³¼ê°€ ì—†ëŠ” ê²½ìš°ë§Œ searchDrugList2 ê²€ìƒ‰ í•¨ìˆ˜ ì‹¤í–‰ 
 //            result = drugService.searchDrugList2(type, search);
 //        }
 //
 //        return result;
 //    }
 
-    // ÅØ½ºÆ®(Á¦Ç°¸í)·Î °Ë»ö 
+    // í…ìŠ¤íŠ¸(ì œí’ˆëª…)ë¡œ ê²€ìƒ‰ 
     @GetMapping("/drug/textSearchList")
     public @ResponseBody List<DrugDTO> textSearchList(@RequestParam("search") String search) {
         List<DrugDTO> result = drugService.searchDrugList(2, search);
 
-        if (result.isEmpty()) {  // searchDrugList °Ë»ö °á°ú°¡ ¾ø´Â °æ¿ì¸¸ searchDrugList2 °Ë»ö ÇÔ¼ö ½ÇÇà 
+        if (result.isEmpty()) {  // searchDrugList ê²€ìƒ‰ ê²°ê³¼ê°€ ì—†ëŠ” ê²½ìš°ë§Œ searchDrugList2 ê²€ìƒ‰ í•¨ìˆ˜ ì‹¤í–‰ 
             result = drugService.searchDrugList2(2, search);
         }
 
         return result;
     }
     
-    // Áõ»óÀ¸·Î °Ë»ö
+    // ì¦ìƒìœ¼ë¡œ ê²€ìƒ‰
     @GetMapping("/drug/efcySearchList")
     public @ResponseBody List<DrugDTO> efcySearchList(@RequestParam("search") String search) {
         List<DrugDTO> result = drugService.searchDrugList(3, search);
@@ -65,72 +69,72 @@ public class DrugController {
     }
     
     
-    // ¾àÇ°ÀÇ ¸ğ¾çÀ¸·Î °Ë»ö 
+    // ì•½í’ˆì˜ ëª¨ì–‘ìœ¼ë¡œ ê²€ìƒ‰ 
     @PostMapping("/drug/getDrugFromShape")
     public @ResponseBody List<ShapeDTO> getDrugFromShape(@RequestBody ShapeDTO shapeDTO) {
         return drugService.getDrugFromShape(shapeDTO);
     }
     
 
-    // ¼±ÅÃÇÑ Á¦Ç°ÀÇ Á¤º¸¸¦ ¹İÈ¯
+    // ì„ íƒí•œ ì œí’ˆì˜ ì •ë³´ë¥¼ ë°˜í™˜
     @GetMapping("/drug/getDrugInfo")
     public @ResponseBody DrugDTO getDrugInfo(@RequestParam("seq") String seq) {
         return drugService.getDrugInfo(seq);
     }
 
     
-    // ¼±ÅÃÇÑ Á¦Ç°À» ÀÚ½ÅÀÇ Á¦Ç° ¸®½ºÆ®¿¡ Ãß°¡
+    // ì„ íƒí•œ ì œí’ˆì„ ìì‹ ì˜ ì œí’ˆ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
     @PostMapping("/drug/addMyDrug")
     public @ResponseBody boolean addMyDrug(@RequestBody DrugDTO drugDTO) {
         return drugService.addMyDrug(drugDTO,user_id);
     }
     
     
-    // ÀÚ½ÅÀÌ µî·ÏÇÑ Á¦Ç° ¸®½ºÆ® (filter = µî·Ï¼ø, ÃÖ½Å¼ø) 
+    // ìì‹ ì´ ë“±ë¡í•œ ì œí’ˆ ë¦¬ìŠ¤íŠ¸ (filter = ë“±ë¡ìˆœ, ìµœì‹ ìˆœ) 
     @GetMapping("/drug/getMyDrugList")
     public @ResponseBody List<DrugDTO> getMyDrugList(@RequestParam("filter") String filter) {
         return drugService.getMyDrugList(user_id, filter);
     }
     
    
-    // ¼±ÅÃÇÑ º¸À¯ Á¦Ç° Á¤º¸
+    // ì„ íƒí•œ ë³´ìœ  ì œí’ˆ ì •ë³´
     @GetMapping("/drug/getMyDrugInfo")
     public @ResponseBody DrugDTO getMyDrugInfo(@RequestParam("pid") Long pid) {
         return drugService.getMyDrugInfo(pid);
     }
     
     
-    // ¼±ÅÃÇÑ º¸À¯ Á¦Ç° Á¤º¸ º¯°æ
+    // ì„ íƒí•œ ë³´ìœ  ì œí’ˆ ì •ë³´ ë³€ê²½
     @PostMapping("/drug/updateMyDrug")
     public @ResponseBody boolean updateMyDrug(@RequestBody DrugDTO drugDTO) {
         return drugService.updateMyDrug(drugDTO);
     }
     
     
-    // ÀÚ½ÅÀÇ º¸À¯ Á¦Ç° Á¦°Å
+    // ìì‹ ì˜ ë³´ìœ  ì œí’ˆ ì œê±°
     @GetMapping("/drug/deleteMyDrug")
     public @ResponseBody boolean deleteMyDrug(@RequestParam("pid") Long pid) {
         return drugService.deleteMyDrug(pid);
     }
     
 
-    //OCR·Î Á¦Ç° Ã£±â
+    //OCRë¡œ ì œí’ˆ ì°¾ê¸°
     @PostMapping("/drug/ocr")
     public @ResponseBody List<DrugDTO> getOCRSearch(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request) throws IOException {
         String rootPath = request.getSession().getServletContext().getRealPath("/");
 
-        // ÆÄÀÏÀ» ÀúÀåÇÒ Æú´õ¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
+        // íŒŒì¼ì„ ì €ì¥í•  í´ë”ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
         File uploadDir = new File(rootPath + "/WEB-INF/productupload");
 
-        // ÁöÁ¤µÈ Æú´õ°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é »ı¼ºÇÕ´Ï´Ù.
+        // ì§€ì •ëœ í´ë”ê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ìƒì„±í•©ë‹ˆë‹¤.
         if (!uploadDir.exists()) {
             uploadDir.mkdirs();
         }
 
-        // ÀúÀåÇÒ ÆÄÀÏÀÇ °æ·Î¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ì €ì¥í•  íŒŒì¼ì˜ ê²½ë¡œë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         File fileToSave = new File(uploadDir, multipartFile.getOriginalFilename());
 
-        // MultipartFileÀÇ ³»¿ëÀ» ÁöÁ¤µÈ ÆÄÀÏ¿¡ ÀúÀåÇÕ´Ï´Ù.
+        // MultipartFileì˜ ë‚´ìš©ì„ ì§€ì •ëœ íŒŒì¼ì— ì €ì¥í•©ë‹ˆë‹¤.
         multipartFile.transferTo(fileToSave);
 
         List<DrugDTO> list =ocrService.getOCRResultDrug(fileToSave);
@@ -138,25 +142,32 @@ public class DrugController {
         return list;
     }
 
-    // ¼ö·® ºÎÁ· ¾à ¸®½ºÆ® 
+    // ìˆ˜ëŸ‰ ë¶€ì¡± ì•½ ë¦¬ìŠ¤íŠ¸ 
     @GetMapping("/drug/getMyDrugListCount")
     public @ResponseBody
     List<DrugDTO> getMyDrugListCount() {
         return drugService.getDrugListByType(user_id, 1);
     }
 
-    // À¯Åë±âÇÑ ÀÓ¹Ú ¾à ¸®½ºÆ® 
+    // ìœ í†µê¸°í•œ ì„ë°• ì•½ ë¦¬ìŠ¤íŠ¸ 
     @GetMapping("/drug/getMyDrugListExpirationDate")
     public @ResponseBody
     List<DrugDTO> getMyDrugListExpirationDate() {
         return drugService.getDrugListByType(user_id, 2);
     }
 
-    // À¯Åë±âÇÑ Áö³­ ¾à ¸®½ºÆ® 
+    // ìœ í†µê¸°í•œ ì§€ë‚œ ì•½ ë¦¬ìŠ¤íŠ¸ 
     @GetMapping("/drug/getMyDrugListPassExpirationDate")
     public @ResponseBody
     List<DrugDTO> getMyDrugListPassExpirationDate() {
         return drugService.getDrugListByType(user_id, 3);
+    }
+    
+    // ì•Œì•½ ì´ë¯¸ì§€ ì¸ì‹
+    @PostMapping(value = "/drug/v1.0/recognition")
+    public @ResponseBody List<DrugDTO> recognition(@ModelAttribute RequestJson request) {
+        List<String> names = aiService.getAiDrugName(request);
+        return aiService.getAiDrugInfo(names);
     }
 
 }
