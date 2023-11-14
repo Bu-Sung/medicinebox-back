@@ -223,7 +223,7 @@ public class DosageService {
         List<DosageEntity> dosageEntities = dosageRepository.findByUid(uid);
 
         for (DosageEntity dosageEntity : dosageEntities) {
-            DrugEntity drugEntity = drugRepository.findByPid(dosageEntity.getPid());
+
             String dosageDate = dosageEntity.getDate().toLocalDate().toString(); // 복용한 날짜
 
             // 해당 날짜의 복용한 기록만 가져오기
@@ -231,7 +231,7 @@ public class DosageService {
                 dosageDTOS.add(DosageDTO.builder()
                         .did(dosageEntity.getDid())
                         .userName(dosageEntity.getName())
-                        .drugName(drugEntity.getName())
+                        .drugName(dosageEntity.getDrugName())
                         .pid(dosageEntity.getPid())
                         .seq(dosageEntity.getSeq())
                         .date(dosageEntity.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")))
