@@ -142,17 +142,34 @@ public class DrugService {
      *
      */
     public List<ShapeDTO> getDrugFromShape(ShapeDTO shapeDTO) {
-        
-       List<ShapeDTO> shapeDTOs = new ArrayList<>();
+
+        List<ShapeDTO> shapeDTOs = new ArrayList<>();
         // 1. 검색창에 입력된 모양으로 검색(shapeEntity)
         
         if (shapeDTO.getForm() != null && shapeDTO.getForm().equals("정제")) {
             shapeDTO.setForm("정");
         }
-
+        
         if (shapeDTO.getFrontLine() != null && shapeDTO.getFrontLine().equals("없음")) {
             shapeDTO.setFrontLine("");
         }
+        
+        if (shapeDTO.getShape() != null && shapeDTO.getShape().equals("건너뛰기")) {
+            shapeDTO.setShape("");
+        }
+        
+        if(shapeDTO.getForm() != null && shapeDTO.getForm().equals("건너뛰기")) {
+            shapeDTO.setForm("");
+        }
+
+        if (shapeDTO.getFrontLine() != null && shapeDTO.getFrontLine().equals("건너뛰기")) {
+            shapeDTO.setFrontLine(null);
+        }
+        
+        if (shapeDTO.getFrontColor()!= null && shapeDTO.getFrontColor().equals("건너뛰기")) {
+            shapeDTO.setFrontColor("");
+        }
+       
 
         List<ShapeEntity> shapeEntities = shapeRepository.findSeqByShape(shapeDTO.getShape(), shapeDTO.getForm(), shapeDTO.getFrontLine(), shapeDTO.getFrontColor(), shapeDTO.getBackColor(), shapeDTO.getFrontPrint(), shapeDTO.getBackPrint());
 
@@ -178,8 +195,8 @@ public class DrugService {
         return shapeDTOs;
     }
     
-    
 
+    
     /**
      * 선택한 제품의 정보를 반환
      *
