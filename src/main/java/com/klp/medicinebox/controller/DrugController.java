@@ -71,7 +71,7 @@ public class DrugController {
     
     // 약품의 모양으로 검색 
     @PostMapping("/drug/getDrugFromShape")
-    public @ResponseBody List<ShapeDTO> getDrugFromShape(@RequestBody ShapeDTO shapeDTO) {
+    public @ResponseBody List<DrugDTO> getDrugFromShape(@RequestBody ShapeDTO shapeDTO) {
         return drugService.getDrugFromShape(shapeDTO);
     }
     
