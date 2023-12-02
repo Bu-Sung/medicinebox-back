@@ -60,7 +60,7 @@ public class DrugService {
             /*URL*/
             StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList");
             /*Service Key*/
-            urlBuilder.append("?" + URLEncoder.encode("serviceKey", "UTF-8") + "=Luco9rwVuxP3RyPaO%2BYc09eiRfSRf%2B260CwkIJfvChXaraDw6TkGMGAO2XeHGX%2FIzhlKjnDgLx60xGKd2UYh1Q%3D%3D");
+            urlBuilder.append("?" + URLEncoder.encode("serviceKey", "UTF-8") + "=sDtf81qz1ObM5WdrhmQaFgaa9zJ1%2BlOhV1%2B%2FAoKwlPHXITobuVPCQicwzsOSKp7UR%2BQyctLfoGDQ8aMjVjM%2FxQ%3D%3D");
             /*페이지번호*/
             urlBuilder.append("&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8"));
             /*한 페이지 결과 수*/
@@ -141,60 +141,50 @@ public class DrugService {
      * @author 박채빈
      *
      */
-    public List<ShapeDTO> getDrugFromShape(ShapeDTO shapeDTO) {
+    public List<DrugDTO> getDrugFromShape(ShapeDTO shapeDTO) {
 
-        List<ShapeDTO> shapeDTOs = new ArrayList<>();
         // 1. 검색창에 입력된 모양으로 검색(shapeEntity)
-        
         if (shapeDTO.getForm() != null && shapeDTO.getForm().equals("정제")) {
             shapeDTO.setForm("정");
         }
-        
+
         if (shapeDTO.getFrontLine() != null && shapeDTO.getFrontLine().equals("없음")) {
             shapeDTO.setFrontLine("");
         }
-        
+
         if (shapeDTO.getShape() != null && shapeDTO.getShape().equals("건너뛰기")) {
             shapeDTO.setShape("");
         }
-        
-        if(shapeDTO.getForm() != null && shapeDTO.getForm().equals("건너뛰기")) {
+
+        if (shapeDTO.getForm() != null && shapeDTO.getForm().equals("건너뛰기")) {
             shapeDTO.setForm("");
         }
 
         if (shapeDTO.getFrontLine() != null && shapeDTO.getFrontLine().equals("건너뛰기")) {
             shapeDTO.setFrontLine(null);
         }
-        
-        if (shapeDTO.getFrontColor()!= null && shapeDTO.getFrontColor().equals("건너뛰기")) {
+
+        if (shapeDTO.getFrontColor() != null && shapeDTO.getFrontColor().equals("건너뛰기")) {
             shapeDTO.setFrontColor("");
         }
-       
 
         List<ShapeEntity> shapeEntities = shapeRepository.findSeqByShape(shapeDTO.getShape(), shapeDTO.getForm(), shapeDTO.getFrontLine(), shapeDTO.getFrontColor(), shapeDTO.getBackColor(), shapeDTO.getFrontPrint(), shapeDTO.getBackPrint());
+
+        List<DrugDTO> drugDTOs = new ArrayList<>();
 
         // 2. 검색한 결과들의 제품 기준 코드, 이름, 사진 반환 (shapeDTO)
         for (ShapeEntity shapeEntity : shapeEntities) {
 
-                ShapeDTO searchResult = new ShapeDTO();
-                searchResult.setSeq(shapeEntity.getSeq());
-                searchResult.setForm(shapeEntity.getForm());
-                searchResult.setImage(shapeEntity.getImage());
-                searchResult.setFrontPrint(shapeEntity.getFrontPrint());
-                searchResult.setBackPrint(shapeEntity.getBackPrint());
-                searchResult.setShape(shapeEntity.getShape());
-                searchResult.setFrontColor(shapeEntity.getFrontColor());
-                searchResult.setBackColor(shapeEntity.getBackColor());
-                searchResult.setFrontLine(shapeEntity.getFrontLine());
-                searchResult.setBackLine(shapeEntity.getBackLine()); 
-                searchResult.setName(shapeEntity.getName());
-
-                shapeDTOs.add(searchResult);
+            DrugDTO drugInfo = getDrugInfo(shapeEntity.getSeq());
+            if (drugInfo != null) {
+                drugDTOs.add(drugInfo);
             }
 
-        return shapeDTOs;
+        }
+
+        return drugDTOs;
     }
-    
+
 
     
     /**
